@@ -24,7 +24,7 @@ import math
 def create_parser():
 	""" Parse arguments """
 	parser = argparse.ArgumentParser(description="""
-	Program: FilterForReadsOfSpecificScaffolds.py
+	Program: SubsetAssemblyAndAlignmentFiles.py
 	Author: Rauf Salamzade
     UW Madison MDTP / Rotating in Anantharaman Lab
     This program gathers scaffolds (or specific coords on them) of interest in MAGs and reads aligning to them.
