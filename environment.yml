@@ -1,0 +1,14 @@
+name: null
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.7
+  - r-base=4.0.2
+  - biopython
+  - pysam
+  - scipy
+  - bioconda::mummer
+  - bioconda::samtools
+  - bioconda::jellyfish
