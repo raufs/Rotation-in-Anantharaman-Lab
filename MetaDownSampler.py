@@ -29,7 +29,7 @@ def create_parser():
     UW Madison MDTP / Rotating in Anantharaman Lab
     This program simulates downsampling reads in a metagenome sample to realistially fragment genomic assemblies.
     
-    It takes as input metagenomic assembly in FASTA format, reflexive alignments in SAM, BAM, or SAM.gz format, and optionally a 
+    It takes as input metagenomic assembly in FASTA format, reflexive alignments in sorted and indexed BAM and optionally a 
     set of scaffolds of interest. It will then downsample the number of reads to a user-specified fold and return a
     fragmented assembly and a subset of reads. 
 	""", formatter_class=argparse.RawTextHelpFormatter)
