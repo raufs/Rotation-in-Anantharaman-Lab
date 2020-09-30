@@ -37,7 +37,7 @@ def create_parser():
 	parser.add_argument('-m', '--mag', type=str, help="FASTA (single entry) for reference scaffold upon which to call windows on.", required=True)
 	parser.add_argument('-a', '--alignment', type=str, help='Reflexive alignment files in BAM format.', required=True)
 	parser.add_argument('-o', '--outdir', type=str, help='path to output directory.', required=True)
-	parser.add_argument('-b', '--bed', type=str, help='BED file with four columns listing the scaffold, start pos, stop pos, and id.', required=False, default=None)
+	parser.add_argument('-b', '--bed', type=str, help='BED file with four columns listing the scaffold, start pos, stop pos, and id. Coordinate ranges on same scaffold should never overlap!', required=False, default=None)
 	parser.add_argument('-f', '--downsample_folds', type=float, nargs='+', help='Provide list of downsampling folds. Values should be between 0 (no reads) and 1 (all reads).', required=False, default=[1.0, 0.25, 0.5, 0.75])
 	parser.add_argument('-l', '--min_depth', type=int, help='Minimum depth required for scaffolds to be considered covered and prevent fragmenting scaffolds. Should be greater than 1.', required=False, default=1)
 	parser.add_argument('-s', '--min_scaff_length', type=int, help='Minimum scaffold length to retain after fragmentation has been performed.', required=False, default=3000)
@@ -206,7 +206,13 @@ def main():
 						subseq = ""
 						if max_pos == len(scaff_seq): subseq = scaff_seq[min_pos-1:]
 						else: subseq = scaff_seq[min_pos-1:max_pos]
-						outf_assembly.write('>' + select_scaffolds_ids[scaff] + '_' + str(split_index) + '\n' + subseq + '\n')
+						scaff_id = select_scaffols_ids[scaff][0]
+						if len(select_scaffolds_ids[scaff]) > 1:
+							for ci, c in enumerate(select_scaffolds_coords[scaff]):
+								cc = set(range(c[0], c[1]))
+								if len(cc.intersection(set(tmp))) > 0:
+									scaff_id = select_scaffolds_ids[scaff][ci]
+						outf_assembly.write('>' + scaff_id + '_' + str(split_index) + '\n' + subseq + '\n')
 						split_index += 1
 					tmp = []
 
@@ -216,8 +222,15 @@ def main():
 				subseq = ""
 				if max_pos == len(scaff_seq): subseq = scaff_seq[min_pos-1:]
 				else: subseq = scaff_seq[min_pos-1:max_pos]
-				outf_assembly.write('>' + select_scaffolds_ids[scaff] + '_' + str(split_index) + '\n' + subseq + '\n')
+				scaff_id = select_scaffols_ids[scaff][0]
+				if len(select_scaffolds_ids[scaff]) > 1:
+					for ci, c in enumerate(select_scaffolds_coords[scaff]):
+						cc = set(range(c[0], c[1]))
+						if len(cc.intersection(set(tmp))) > 0:
+							scaff_id = select_scaffolds_ids[scaff][ci]
+				outf_assembly.write('>' + scaff_id + '_' + str(split_index) + '\n' + subseq + '\n')
 				split_index += 1
+			tmp = []
 		outf_assembly.close()
 		outf_r1.close()
 		outf_r2.close()
