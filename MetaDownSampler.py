@@ -206,7 +206,7 @@ def main():
 						subseq = ""
 						if max_pos == len(scaff_seq): subseq = scaff_seq[min_pos-1:]
 						else: subseq = scaff_seq[min_pos-1:max_pos]
-						scaff_id = select_scaffols_ids[scaff][0]
+						scaff_id = select_scaffolds_ids[scaff][0]
 						if len(select_scaffolds_ids[scaff]) > 1:
 							for ci, c in enumerate(select_scaffolds_coords[scaff]):
 								cc = set(range(c[0], c[1]))
@@ -222,7 +222,7 @@ def main():
 				subseq = ""
 				if max_pos == len(scaff_seq): subseq = scaff_seq[min_pos-1:]
 				else: subseq = scaff_seq[min_pos-1:max_pos]
-				scaff_id = select_scaffols_ids[scaff][0]
+				scaff_id = select_scaffolds_ids[scaff][0]
 				if len(select_scaffolds_ids[scaff]) > 1:
 					for ci, c in enumerate(select_scaffolds_coords[scaff]):
 						cc = set(range(c[0], c[1]))
