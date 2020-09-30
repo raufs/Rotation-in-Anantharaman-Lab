@@ -37,9 +37,10 @@ def create_parser():
 	parser.add_argument('-m', '--mag', type=str, help="FASTA (single entry) for reference scaffold upon which to call windows on.", required=True)
 	parser.add_argument('-a', '--alignment', type=str, help='Reflexive alignment files in BAM format.', required=True)
 	parser.add_argument('-o', '--outdir', type=str, help='path to output directory.', required=True)
-	parser.add_argument('-b', '--bed', type=str, help='BED file with three columns listing the scaffold, start pos, stop pos, and id.', required=False, default=None)
+	parser.add_argument('-b', '--bed', type=str, help='BED file with four columns listing the scaffold, start pos, stop pos, and id.', required=False, default=None)
 	parser.add_argument('-f', '--downsample_folds', type=float, nargs='+', help='Provide list of downsampling folds. Values should be between 0 (no reads) and 1 (all reads).', required=False, default=[1.0, 0.25, 0.5, 0.75])
 	parser.add_argument('-l', '--min_depth', type=int, help='Minimum depth required for scaffolds to be considered covered and prevent fragmenting scaffolds. Should be greater than 1.', required=False, default=1)
+	parser.add_argument('-s', '--min_scaff_length', type=int, help='Minimum scaffold length to retain after fragmentation has been performed.', required=False, default=3000)
 	args = parser.parse_args()
 	return args
 
@@ -59,6 +60,7 @@ def main():
 	bed_file = myargs.bed
 	downsample_folds_list = myargs.downsample_folds
 	min_depth = myargs.min_depth
+	min_scaff_length = myargs.min_scaff_length
 	outdir = os.path.abspath(myargs.outdir) + '/'
 
 	downsampling_folds = []
@@ -99,7 +101,14 @@ def main():
 					except:
 						sys.stderr.write("Did not find scaffold %s in metagenomic assembly, ignoring it.\n" % scaff)
 		else:
-			select_scaffolds = all_scaffolds
+			with open(mag_fasta) as omf:
+				for rec in SeqIO.parse(omf, 'fasta'):
+					scaff = rec.id
+					select_scaffolds.add(scaff)
+					start = 1
+					stop = len(str(rec.seq))
+					select_scaffolds_coords[scaff].append([start, stop])
+					select_scaffolds_ids[scaff].append(scaff)
 	except:
 		raise RuntimeError("Errors with reading in input files, perhaps paths are broken.")
 
@@ -191,23 +200,23 @@ def main():
 				if scaffold_coverage[p] >= min_depth and p in scaff_range:
 					tmp.append(p)
 				else:
-					if len(tmp) >= 3000:
+					if len(tmp) >= min_scaff_length:
 						min_pos = min(tmp)
 						max_pos = max(tmp)
 						subseq = ""
 						if max_pos == len(scaff_seq): subseq = scaff_seq[min_pos-1:]
 						else: subseq = scaff_seq[min_pos-1:max_pos]
-						outf_assembly.write('>' + scaff + '_' + str(split_index) + '\n' + subseq + '\n')
+						outf_assembly.write('>' + select_scaffolds_ids[scaff] + '_' + str(split_index) + '\n' + subseq + '\n')
 						split_index += 1
 					tmp = []
 
-			if len(tmp) >= 3000:
+			if len(tmp) >= min_scaff_length:
 				min_pos = min(tmp)
 				max_pos = max(tmp)
 				subseq = ""
 				if max_pos == len(scaff_seq): subseq = scaff_seq[min_pos-1:]
 				else: subseq = scaff_seq[min_pos-1:max_pos]
-				outf_assembly.write('>' + scaff + '_' + str(split_index) + '\n' + subseq + '\n')
+				outf_assembly.write('>' + select_scaffolds_ids[scaff] + '_' + str(split_index) + '\n' + subseq + '\n')
 				split_index += 1
 		outf_assembly.close()
 		outf_r1.close()
