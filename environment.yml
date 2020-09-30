@@ -12,3 +12,4 @@ dependencies:
   - bioconda::mummer
   - bioconda::samtools
   - bioconda::jellyfish
+  - bioconda::mash
